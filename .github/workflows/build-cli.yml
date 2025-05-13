@@ -7,10 +7,10 @@ on:
   workflow_dispatch:
     inputs:
       upload-to-release:
-        description: |
-          Whether to upload the built artifacts to a draft release. When true, the artifacts will
-          be uploaded to a release with the tag `cli-vX.Y.Z`. (Where the version is determined from
-          `Cargo.toml`.)
+        # Whether to upload the built artifacts to a draft release. When true, the artifacts will
+        # be uploaded to a release with the tag `cli-vX.Y.Z`. (Where the version is determined from
+        # `Cargo.toml`.)
+        description: Upload to release tagged with `cli-vX.Y.Z`
         required: true
         type: boolean
 
@@ -60,7 +60,9 @@ jobs:
       # - `extension`: The executable extension for this platform.
       matrix:
         include:
-          - os: ubuntu-latest
+          # We use an older version of Ubuntu so the CLI dynamically links to an older `glibc`
+          # version, increasing compatibility.
+          - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
             extension: ''
           - os: windows-latest
@@ -84,7 +86,7 @@ jobs:
           components: ${{ needs.extract-rust-version.outputs.components }}
 
       - name: Build CLI
-        run: cargo build --package bevy_cli --release --locked
+        run: cargo build --package bevy_cli --release --all-features --locked
 
       - name: Rename executable
         shell: bash
